@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Realistic data seeder for MongoDB database
+MongoDB data seeder
 """
 
 import random
@@ -9,11 +9,11 @@ from datetime import datetime, timedelta
 from db import Database, Student, Course, Instructor, Enrollment
 
 def generate_realistic_id(prefix, length=6):
-    """Generate realistic ID with prefix"""
+    """Generate ID"""
     return f"{prefix}{random.randint(10**(length-1), 10**length-1)}"
 
 def generate_realistic_name():
-    """Generate realistic name"""
+    """Generate name"""
     first_names = [
         "Emma", "Liam", "Olivia", "Noah", "Ava", "Ethan", "Sophia", "Mason", 
         "Isabella", "William", "Mia", "James", "Charlotte", "Benjamin", 
@@ -27,7 +27,7 @@ def generate_realistic_name():
     return f"{random.choice(first_names)} {random.choice(last_names)}"
 
 def generate_realistic_email(name, domain="edu"):
-    """Generate realistic email"""
+    """Generate email"""
     first, last = name.lower().replace(" ", "-").split("-")
     numbers = random.randint(1, 99)
     
@@ -39,7 +39,7 @@ def generate_realistic_email(name, domain="edu"):
         return f"{first}.{last}{numbers}@{random.choice(domains)}"
 
 def generate_course_code(subject, level, existing_codes):
-    """Generate realistic unique course code"""
+    """Generate course code"""
     subject_codes = {
         "CS": ["CS", "CSC", "CMP", "SE"],
         "MATH": ["MATH", "MAT", "CALC", "STAT"],
@@ -50,7 +50,7 @@ def generate_course_code(subject, level, existing_codes):
     
     subject_prefix = random.choice(subject_codes[subject.split()[0]])
     
-    # Try to generate a unique code
+    # Try for unique code
     attempts = 0
     while attempts < 10:
         course_num = f"{level}{random.randint(10, 99)}"
@@ -59,32 +59,32 @@ def generate_course_code(subject, level, existing_codes):
             return course_code
         attempts += 1
     
-    # Fallback - just use a timestamp to make it unique
+    # Fallback to unique
     course_code = f"{subject_prefix}{level}{random.randint(100, 999)}"
     return course_code
 
 def main():
-    print("🌱 Realistic MongoDB Data Seeder")
+    print("Realistic MongoDB Data Seeder")
     print("=" * 40)
     
     try:
         db = Database()
-        print("✅ Connected to MongoDB")
+        print("Connected to MongoDB")
         
-        # Clear existing data
-        print("🗑️  Clearing existing data...")
+        # Clear data
+        print("Clearing existing data...")
         db.get_db().students.delete_many({})
         db.get_db().courses.delete_many({})
         db.get_db().instructors.delete_many({})
         db.get_db().enrollments.delete_many({})
         
-        # Create models
+        # Setup models
         student_model = Student(db)
         course_model = Course(db)
         instructor_model = Instructor(db)
         enrollment_model = Enrollment(db)
         
-        # Realistic majors and courses
+        # Majors and courses
         majors = {
             "Computer Science": ["CS", 150, 8.8],
             "Data Science": ["DS", 120, 7.2], 
@@ -96,7 +96,7 @@ def main():
             "Engineering": ["ENG", 110, 6.7]
         }
         
-        # Realistic courses per major
+        # Courses per major
         courses_data = {
             "Computer Science": [
                 "Introduction to Programming", "Data Structures & Algorithms", 
@@ -126,11 +126,11 @@ def main():
             ]
         }
         
-        # Generate Instructors first
-        print("👥 Generating realistic instructors...")
+        # Generate instructors
+        print("Generating realistic instructors...")
         instructors = []
         
-        # Department heads and senior faculty
+        # Department heads
         for i, major in enumerate(majors.keys()):
             # Department head
             dept_head_name = generate_realistic_name()
@@ -168,10 +168,10 @@ def main():
             instructors.append(instructor)
             instructor_model.create(instructor)
         
-        print(f"✅ Created {len(instructors)} instructors")
+        print(f"Created {len(instructors)} instructors")
         
         # Generate Courses
-        print("📚 Generating realistic courses...")
+        print("Generating realistic courses...")
         courses = []
         course_id = 0
         existing_course_codes = set()
@@ -221,10 +221,10 @@ def main():
                 courses.append(course)
                 course_model.create(course)
         
-        print(f"✅ Created {len(courses)} courses")
+        print(f"Created {len(courses)} courses")
         
         # Generate Students
-        print("👨‍🎓 Generating realistic students...")
+        print("Generating realistic students...")
         students = []
         existing_student_ids = set()
         existing_emails = set()
@@ -275,10 +275,10 @@ def main():
                 students.append(student)
                 student_model.create(student)
         
-        print(f"✅ Created {len(students)} students")
+        print(f"Created {len(students)} students")
         
         # Generate Realistic Enrollments
-        print("📝 Generating realistic enrollments...")
+        print("Generating realistic enrollments...")
         enrollments = []
         
         for student in students:
@@ -333,26 +333,26 @@ def main():
                 enrollments.append(enrollment)
                 enrollment_model.create(enrollment)
         
-        print(f"✅ Created {len(enrollments)} enrollments")
+        print(f"Created {len(enrollments)} enrollments")
         
         # Print statistics
-        print("\n📊 Database Statistics:")
+        print("\nDatabase Statistics:")
         print(f"   Students: {len(students)}")
         print(f"   Courses: {len(courses)}")  
         print(f"   Instructors: {len(instructors)}")
         print(f"   Enrollments: {len(enrollments)}")
         
         # Show major distribution
-        print("\n🎓 Students by Major:")
+        print("\nStudents by Major:")
         for major in majors.keys():
             count = sum(1 for s in students if s["major"] == major)
             avg_gpa = sum(s["gpa"] for s in students if s["major"] == major) / count if count > 0 else 0
             print(f"   {major}: {count} students (Avg GPA: {avg_gpa:.2f})")
         
-        print("\n🎯 Data seeding completed successfully!")
+        print("\nData seeding completed successfully!")
         
     except Exception as e:
-        print(f"❌ Error during seeding: {str(e)}")
+        print(f"Error during seeding: {str(e)}")
         import traceback
         traceback.print_exc()
 

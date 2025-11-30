@@ -4,21 +4,21 @@ import os
 from dotenv import load_dotenv
 
 try:
-    # Load environment variables from .env file if it exists
+    # Load env vars
     load_dotenv()
-    print("✅ Environment variables loaded")
+    print("Environment variables loaded")
 except ImportError:
-    print("⚠️  python-dotenv not installed, using default MongoDB settings")
+    print("Warning: python-dotenv not found")
 except Exception as e:
-    print(f"⚠️  Error loading .env file: {e}")
+    print(f"Warning: Error loading .env file: {e}")
 
 class Database:
     def __init__(self):
-        # Get MongoDB URI from environment variable
+        # Get MongoDB URI
         self.uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017/student_course_db")
         try:
             self.client = MongoClient(self.uri, serverSelectionTimeoutMS=5000)
-            # Test the connection
+            # Test connect
             self.client.admin.command('ping')
             default_db = self.client.get_default_database()
             self.db = default_db if default_db is not None else self.client['student_course_db']
@@ -28,9 +28,9 @@ class Database:
             self.courses = self.db.courses
             self.instructors = self.db.instructors
             self.enrollments = self.db.enrollments
-            print("✅ Connected to MongoDB successfully")
+            print("Connected to MongoDB successfully")
         except Exception as e:
-            print(f"❌ Failed to connect to MongoDB: {str(e)}")
+            print(f"Failed to connect to MongoDB: {str(e)}")
             print("Please ensure MongoDB is running and accessible")
             raise
 
@@ -40,7 +40,7 @@ class Database:
     def close_connection(self):
         try:
             self.client.close()
-            print("Database connection closed")
+            print("Connection closed")
         except Exception:
             pass
 
@@ -51,7 +51,7 @@ class Student:
         self.db = db_connection
 
     def create(self, student_data):
-        """Insert a new student document"""
+        """Add student"""
         try:
             student_data['created_at'] = datetime.now()
             student_data['updated_at'] = datetime.now()
@@ -66,7 +66,7 @@ class Student:
                 raise ValueError(f"Failed to create student: {str(e)}")
 
     def find_by_id(self, student_id):
-        """Find a student by student_id"""
+        """Find student by ID"""
         return self.collection.find_one({"student_id": student_id})
 
     def find_all(self):
@@ -74,7 +74,7 @@ class Student:
         return list(self.collection.find())
 
     def update(self, student_id, update_data):
-        """Update a student document"""
+        """Update student"""
         update_data['updated_at'] = datetime.now()
         result = self.collection.update_one(
             {"student_id": student_id}, 
@@ -83,10 +83,10 @@ class Student:
         return result.modified_count
 
     def delete(self, student_id):
-        """Delete a student document and related enrollments"""
-        # First delete all enrollments for this student
+        """Delete student"""
+        # Delete student enrollments
         self.db.enrollments.delete_many({"student_id": student_id})
-        # Then delete the student
+        # Delete student
         result = self.collection.delete_one({"student_id": student_id})
         return result.deleted_count
 
@@ -97,14 +97,14 @@ class Course:
         self.db = db_connection
 
     def create(self, course_data):
-        """Insert a new course document"""
+        """Add course"""
         course_data['created_at'] = datetime.now()
         course_data['updated_at'] = datetime.now()
         result = self.collection.insert_one(course_data)
         return result.inserted_id
 
     def find_by_code(self, course_code):
-        """Find a course by course_code"""
+        """Find course by code"""
         return self.collection.find_one({"course_code": course_code})
 
     def find_all(self):
@@ -112,7 +112,7 @@ class Course:
         return list(self.collection.find())
 
     def update(self, course_code, update_data):
-        """Update a course document"""
+        """Update course"""
         update_data['updated_at'] = datetime.now()
         result = self.collection.update_one(
             {"course_code": course_code}, 
@@ -121,10 +121,10 @@ class Course:
         return result.modified_count
 
     def delete(self, course_code):
-        """Delete a course document and related enrollments"""
-        # First delete all enrollments for this course
+        """Delete course"""
+        # Delete course enrollments
         self.db.enrollments.delete_many({"course_code": course_code})
-        # Then delete the course
+        # Delete course
         result = self.collection.delete_one({"course_code": course_code})
         return result.deleted_count
 
@@ -135,14 +135,14 @@ class Instructor:
         self.db = db_connection
 
     def create(self, instructor_data):
-        """Insert a new instructor document"""
+        """Add instructor"""
         instructor_data['created_at'] = datetime.now()
         instructor_data['updated_at'] = datetime.now()
         result = self.collection.insert_one(instructor_data)
         return result.inserted_id
 
     def find_by_id(self, instructor_id):
-        """Find an instructor by instructor_id"""
+        """Find instructor by ID"""
         return self.collection.find_one({"instructor_id": instructor_id})
 
     def find_all(self):
@@ -150,7 +150,7 @@ class Instructor:
         return list(self.collection.find())
 
     def update(self, instructor_id, update_data):
-        """Update an instructor document"""
+        """Update instructor"""
         update_data['updated_at'] = datetime.now()
         result = self.collection.update_one(
             {"instructor_id": instructor_id}, 
@@ -159,13 +159,13 @@ class Instructor:
         return result.modified_count
 
     def delete(self, instructor_id):
-        """Delete an instructor document and update related courses"""
-        # Update all courses taught by this instructor to remove instructor assignment
+        """Delete instructor"""
+        # Remove instructor from courses
         self.db.courses.update_many(
             {"instructor_id": instructor_id},
             {"$set": {"instructor_id": None}}
         )
-        # Then delete the instructor
+        # Delete instructor
         result = self.collection.delete_one({"instructor_id": instructor_id})
         return result.deleted_count
 
@@ -175,29 +175,29 @@ class Enrollment:
         self.collection = db_connection.enrollments
 
     def create(self, enrollment_data):
-        """Insert a new enrollment document"""
+        """Add enrollment"""
         enrollment_data['created_at'] = datetime.now()
         enrollment_data['updated_at'] = datetime.now()
         result = self.collection.insert_one(enrollment_data)
         return result.inserted_id
 
     def find_by_student_and_course(self, student_id, course_code):
-        """Find an enrollment by student_id and course_code"""
+        """Find enrollment by student & course"""
         return self.collection.find_one({
             "student_id": student_id,
             "course_code": course_code
         })
 
     def find_by_student(self, student_id):
-        """Find all enrollments for a student"""
+        """Find student enrollments"""
         return list(self.collection.find({"student_id": student_id}))
 
     def find_by_course(self, course_code):
-        """Find all enrollments for a course"""
+        """Find course enrollments"""
         return list(self.collection.find({"course_code": course_code}))
 
     def update(self, student_id, course_code, update_data):
-        """Update an enrollment document"""
+        """Update enrollment"""
         update_data['updated_at'] = datetime.now()
         result = self.collection.update_one(
             {"student_id": student_id, "course_code": course_code}, 
@@ -206,7 +206,7 @@ class Enrollment:
         return result.modified_count
 
     def delete(self, student_id, course_code):
-        """Delete an enrollment document"""
+        """Delete enrollment"""
         result = self.collection.delete_one({
             "student_id": student_id,
             "course_code": course_code

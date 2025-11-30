@@ -9,54 +9,54 @@ class QueryOperations:
         self.instructors = db_connection.instructors
         self.enrollments = db_connection.enrollments
 
-    # Complex Queries
+    # Queries
     def find_students_by_major(self, major):
-        """Find all students in a specific major"""
+        """Students by major"""
         return list(self.students.find({"major": major}))
 
     def find_students_by_year(self, year):
-        """Find all students in a specific year (Freshman, Sophomore, etc.)"""
+        """Students by year"""
         return list(self.students.find({"year": year}))
 
     def find_courses_by_instructor(self, instructor_id):
-        """Find all courses taught by a specific instructor"""
+        """Courses by instructor"""
         return list(self.courses.find({"instructor_id": instructor_id}))
 
     def find_enrollments_by_status(self, status):
-        """Find all enrollments with a specific status"""
+        """Enrollments by status"""
         return list(self.enrollments.find({"status": status}))
 
     def find_students_with_gpa_above(self, gpa_threshold):
-        """Find all students with GPA above a threshold"""
+        """Students above GPA"""
         return list(self.students.find({"gpa": {"$gte": gpa_threshold}}))
 
     def find_courses_by_credits(self, credits):
-        """Find all courses with specific number of credits"""
+        """Courses by credits"""
         return list(self.courses.find({"credits": credits}))
 
     def find_students_in_course(self, course_code):
-        """Find all students enrolled in a specific course"""
+        """Students in course"""
         enrollment_docs = list(self.enrollments.find({"course_code": course_code}))
         student_ids = [e["student_id"] for e in enrollment_docs]
         return list(self.students.find({"student_id": {"$in": student_ids}}))
 
     def find_courses_for_student(self, student_id):
-        """Find all courses a student is enrolled in"""
+        """Courses for student"""
         enrollment_docs = list(self.enrollments.find({"student_id": student_id}))
         course_codes = [e["course_code"] for e in enrollment_docs]
         return list(self.courses.find({"course_code": {"$in": course_codes}}))
 
     def find_students_by_semester_and_year(self, semester, year):
-        """Find all students enrolled in courses during a specific semester and year"""
+        """Students by semester/year"""
         course_docs = list(self.courses.find({"semester": semester, "year": year}))
         course_codes = [c["course_code"] for c in course_docs]
         enrollment_docs = list(self.enrollments.find({"course_code": {"$in": course_codes}}))
         student_ids = [e["student_id"] for e in enrollment_docs]
         return list(self.students.find({"student_id": {"$in": student_ids}}))
 
-    # Aggregation Operations
+    # Aggregations
     def get_average_gpa_by_major(self):
-        """Calculate average GPA grouped by major"""
+        """Avg GPA by major"""
         pipeline = [
             {
                 "$group": {
@@ -71,9 +71,9 @@ class QueryOperations:
         ]
         return list(self.students.aggregate(pipeline))
 
-    # Advanced Filter Operations
+    # Filters
     def filter_students(self, major=None, year=None, min_gpa=None, max_gpa=None):
-        """Filter students by multiple criteria"""
+        """Filter students"""
         query = {}
         if major:
             query["major"] = major
@@ -88,13 +88,13 @@ class QueryOperations:
                     gpa_query["$lte"] = float(max_gpa)
                 query["gpa"] = gpa_query
             except (ValueError, TypeError):
-                # Skip GPA filtering if invalid values provided
+                # Skip invalid GPA
                 pass
         
         return list(self.students.find(query))
 
     def filter_courses(self, instructor_id=None, credits=None, semester=None, year=None):
-        """Filter courses by multiple criteria"""
+        """Filter courses"""
         query = {}
         if instructor_id:
             query["instructor_id"] = instructor_id
@@ -104,7 +104,7 @@ class QueryOperations:
             if year:
                 query["year"] = int(year)
         except (ValueError, TypeError):
-            # Skip numeric filtering if invalid values provided
+            # Skip invalid numbers
             pass
         if semester:
             query["semester"] = semester
@@ -112,7 +112,7 @@ class QueryOperations:
         return list(self.courses.find(query))
 
     def filter_instructors(self, department=None):
-        """Filter instructors by department"""
+        """Filter instructors"""
         query = {}
         if department:
             query["department"] = department
@@ -120,7 +120,7 @@ class QueryOperations:
         return list(self.instructors.find(query))
 
     def filter_enrollments(self, status=None, grade_min=None, grade_max=None, student_id=None, course_code=None):
-        """Filter enrollments by multiple criteria"""
+        """Filter enrollments"""
         query = {}
         if status:
             query["status"] = status
@@ -129,7 +129,7 @@ class QueryOperations:
         if course_code:
             query["course_code"] = course_code
         
-        # For grade filtering, we need to convert letter grades to numeric values
+        # Convert grades to numbers
         if grade_min is not None or grade_max is not None:
             grade_mapping = {
                 "A+": 4.0, "A": 4.0, "A-": 3.7,
@@ -139,34 +139,33 @@ class QueryOperations:
                 "F": 0.0
             }
             
-            # This is a simplified approach - you might want to store numeric grades directly
-            # or use more complex MongoDB queries for grade ranges
+            # Simplified grade approach
             pass  # Grade filtering would require additional implementation
         
         return list(self.enrollments.find(query))
 
     def get_available_majors(self):
-        """Get all available majors"""
+        """Available majors"""
         return self.students.distinct("major")
 
     def get_available_years(self):
-        """Get all available academic years"""
+        """Available years"""
         return self.students.distinct("year")
 
     def get_available_departments(self):
-        """Get all available departments"""
+        """Available departments"""
         return self.instructors.distinct("department")
 
     def get_available_semesters(self):
-        """Get all available semesters"""
+        """Available semesters"""
         return self.courses.distinct("semester")
 
     def get_available_credits(self):
-        """Get all available credit values"""
+        """Available credits"""
         return sorted(self.courses.distinct("credits"))
 
     def get_enrollment_count_by_course(self):
-        """Get enrollment count for each course"""
+        """Enrollment count by course"""
         pipeline = [
             {
                 "$group": {
@@ -178,7 +177,7 @@ class QueryOperations:
         return list(self.enrollments.aggregate(pipeline))
 
     def get_grade_distribution_for_course(self, course_code):
-        """Get the distribution of grades for a specific course"""
+        """Grade distribution by course"""
         pipeline = [
             {
                 "$match": {
@@ -196,18 +195,18 @@ class QueryOperations:
         return list(self.enrollments.aggregate(pipeline))
 
     def get_top_performing_students(self, limit=5):
-        """Get the top N students by GPA"""
+        """Top students by GPA"""
         return list(self.students.find().sort("gpa", DESCENDING).limit(limit))
 
     def get_courses_by_credits_and_semester(self, credits, semester):
-        """Find courses with specific credits in a semester"""
+        """Courses by credits & semester"""
         return list(self.courses.find({
             "credits": credits,
             "semester": semester
         }))
 
     def get_instructor_course_count(self):
-        """Count number of courses taught by each instructor"""
+        """Course count per instructor"""
         pipeline = [
             {
                 "$group": {
@@ -219,7 +218,7 @@ class QueryOperations:
         return list(self.courses.aggregate(pipeline))
 
     def get_passing_grade_enrollment_count(self):
-        """Count enrollments with passing grades (C or higher)"""
+        """Passing grade enrollments"""
         passing_grades = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C"]
         pipeline = [
             {
@@ -237,7 +236,7 @@ class QueryOperations:
         return list(self.enrollments.aggregate(pipeline))
 
     def get_student_enrollment_history(self, student_id):
-        """Get all courses a student has taken"""
+        """Student course history"""
         pipeline = [
             {
                 "$match": {
@@ -256,7 +255,7 @@ class QueryOperations:
         return list(self.enrollments.aggregate(pipeline))
 
     def get_average_credits_per_student_in_semester(self, semester, year):
-        """Calculate average number of credits per student in a semester"""
+        """Avg credits per student"""
         pipeline = [
             {
                 "$match": {

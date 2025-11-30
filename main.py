@@ -6,7 +6,7 @@ import os
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 
-# Initialize database and models
+# Setup database
 db = Database()
 student_model = Student(db)
 course_model = Course(db)
@@ -17,20 +17,20 @@ query_ops = QueryOperations(db)
 # Routes
 @app.route('/')
 def dashboard():
-    """Main dashboard with overview"""
+    """Dashboard home"""
     try:
-        # Get statistics
+        # Get stats
         total_students = len(student_model.find_all())
         total_courses = len(course_model.find_all())
         total_instructors = len(instructor_model.find_all())
         
-        # Get all enrollments correctly
+        # Count enrollments
         all_students = student_model.find_all()
         total_enrollments = 0
         for student in all_students:
             total_enrollments += len(enrollment_model.find_by_student(student['student_id']))
         
-        # Get basic analytics
+        # Get analytics
         avg_gpa_by_major = query_ops.get_average_gpa_by_major()
         top_students = query_ops.get_top_performing_students(5)
         
@@ -45,12 +45,12 @@ def dashboard():
         flash(f'Error loading dashboard: {str(e)}', 'error')
         return render_template('core/dashboard.html')
 
-# Student Routes
+# Students
 @app.route('/students')
 def students_list():
-    """List all students with filters"""
+    """Student list with filters"""
     try:
-        # Get filter parameters
+        # Get filters
         major = request.args.get('major')
         year = request.args.get('year')
         min_gpa = request.args.get('min_gpa')
@@ -58,7 +58,7 @@ def students_list():
         
         students = []
         if major or year or min_gpa or max_gpa:
-            # Apply filters
+            # Filter if needed
             students = query_ops.filter_students(
                 major=major,
                 year=year,
@@ -66,10 +66,10 @@ def students_list():
                 max_gpa=max_gpa
             )
         else:
-            # Get all students
+            # Get all
             students = student_model.find_all()
         
-        # Get filter options
+        # Filter options
         available_majors = query_ops.get_available_majors()
         available_years = query_ops.get_available_years()
         
@@ -85,7 +85,7 @@ def students_list():
                              })
     except Exception as e:
         flash(f'Error loading students: {str(e)}', 'error')
-        # Still need to provide all the template variables in error case
+        # Provide all vars for error
         return render_template('lists/students_list.html', 
                              students=[],
                              available_majors=[],
@@ -99,7 +99,7 @@ def students_list():
 
 @app.route('/students/add', methods=['GET', 'POST'])
 def add_student():
-    """Add a new student"""
+    """Add student"""
     if request.method == 'POST':
         try:
             student_data = {
@@ -123,7 +123,7 @@ def add_student():
 
 @app.route('/students/<student_id>')
 def view_student(student_id):
-    """View student details"""
+    """View student"""
     try:
         student = student_model.find_by_id(student_id)
         if student:
@@ -173,10 +173,10 @@ def delete_student(student_id):
         flash(f'Error deleting student: {str(e)}', 'error')
     return redirect(url_for('students_list'))
 
-# Course Routes
+# Courses
 @app.route('/courses')
 def courses_list():
-    """List all courses with filters"""
+    """Course list with filters"""
     try:
         # Get filter parameters
         instructor_id = request.args.get('instructor_id')
@@ -215,7 +215,7 @@ def courses_list():
                              })
     except Exception as e:
         flash(f'Error loading courses: {str(e)}', 'error')
-        # Still need to provide all the template variables in error case
+        # Provide all vars for error
         return render_template('lists/courses_list.html', 
                              courses=[],
                              available_instructors=[],
@@ -230,7 +230,7 @@ def courses_list():
 
 @app.route('/courses/add', methods=['GET', 'POST'])
 def add_course():
-    """Add a new course"""
+    """Add course"""
     if request.method == 'POST':
         try:
             prerequisites = [p.strip() for p in request.form.get('prerequisites', '').split(',') if p.strip()]
@@ -255,7 +255,7 @@ def add_course():
 
 @app.route('/courses/<course_code>')
 def view_course(course_code):
-    """View course details"""
+    """View course"""
     try:
         course = course_model.find_by_code(course_code)
         if course:
@@ -308,10 +308,10 @@ def delete_course(course_code):
         flash(f'Error deleting course: {str(e)}', 'error')
     return redirect(url_for('courses_list'))
 
-# Instructor Routes
+# Instructors
 @app.route('/instructors')
 def instructors_list():
-    """List all instructors with filters"""
+    """Instructor list with filters"""
     try:
         # Get filter parameters
         department = request.args.get('department')
@@ -335,7 +335,7 @@ def instructors_list():
                              })
     except Exception as e:
         flash(f'Error loading instructors: {str(e)}', 'error')
-        # Still need to provide all the template variables in error case
+        # Provide all vars for error
         return render_template('lists/instructors_list.html', 
                              instructors=[],
                              available_departments=[],
@@ -345,7 +345,7 @@ def instructors_list():
 
 @app.route('/instructors/add', methods=['GET', 'POST'])
 def add_instructor():
-    """Add a new instructor"""
+    """Add instructor"""
     if request.method == 'POST':
         try:
             instructor_data = {
@@ -367,7 +367,7 @@ def add_instructor():
 
 @app.route('/instructors/<instructor_id>')
 def view_instructor(instructor_id):
-    """View instructor details"""
+    """View instructor"""
     try:
         instructor = instructor_model.find_by_id(instructor_id)
         if instructor:
@@ -422,17 +422,17 @@ def delete_instructor(instructor_id):
         flash(f'Error deleting instructor: {str(e)}', 'error')
     return redirect(url_for('instructors_list'))
 
-# Enrollment Routes
+# Enrollments
 @app.route('/enrollments')
 def enrollments_list():
-    """List all enrollments with filters"""
+    """Enrollment list with filters"""
     try:
         # Get filter parameters
         student_id = request.args.get('student_id')
         course_code = request.args.get('course_code')
         status = request.args.get('status')
         
-        # Get all students and courses for filter options
+        # Get filter options
         available_students = student_model.find_all()
         available_courses = course_model.find_all()
         available_statuses = ['Active', 'Completed', 'Dropped', 'Withdrawn']
@@ -446,11 +446,11 @@ def enrollments_list():
                 status=status
             )
         else:
-            # Get all enrollments in a single query - MUCH FASTER!
+            # Get enrollments fast
             enrollments = enrollment_model.collection.find({}).sort([("created_at", -1)])
             enrollments = list(enrollments)
             
-            # Pre-load student and course data to avoid N+1 queries in template
+            # Pre-load data for template
             students_dict = {}
             for student in available_students:
                 students_dict[student['student_id']] = student
@@ -476,7 +476,7 @@ def enrollments_list():
                              instructor_model=instructor_model)
     except Exception as e:
         flash(f'Error loading enrollments: {str(e)}', 'error')
-        # Still need to provide all the template variables in error case
+        # Provide all vars for error
         return render_template('lists/enrollments_list.html', 
                              enrollments=[],
                              available_students=[],
@@ -493,7 +493,7 @@ def enrollments_list():
 
 @app.route('/enrollments/add', methods=['GET', 'POST'])
 def add_enrollment():
-    """Add a new enrollment"""
+    """Add enrollment"""
     if request.method == 'POST':
         try:
             enrollment_data = {
@@ -523,17 +523,17 @@ def delete_enrollment():
         flash(f'Error deleting enrollment: {str(e)}', 'error')
     return redirect(url_for('enrollments_list'))
 
-# Query Routes
+# Queries
 @app.route('/queries')
 def queries_page():
-    """Advanced queries page"""
+    """Queries page"""
     try:
         # Get filter parameters
         major = request.args.get('major')
         gpa_threshold = request.args.get('gpa_threshold')
         instructor_id = request.args.get('instructor_id')
         
-        # Execute queries based on filters
+        # Run queries with filters
         students_by_major = []
         students_by_gpa = []
         courses_by_instructor = []
@@ -552,7 +552,7 @@ def queries_page():
         if instructor_id:
             courses_by_instructor = query_ops.find_courses_by_instructor(instructor_id)
         
-        # Always get average GPA by major
+        # Get avg GPA by major
         avg_gpa_by_major = query_ops.get_average_gpa_by_major()
         
         return render_template('core/queries.html',

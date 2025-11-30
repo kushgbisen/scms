@@ -1,16 +1,14 @@
 # UPES Student Course Management System
 
-![UPES Logo](https://upload.wikimedia.org/wikipedia/commons/4/4c/UPES_Logo_without_Tagline.jpg)
-
 A production-ready MongoDB-based web application for managing student information, courses, enrollments, and academic records. Deployed on Vercel serverless platform with global CDN distribution and MongoDB Atlas cloud database.
 
 ## Key Achievements
 
-✅ **Performance**: Resolved N+1 query issues, achieving 95% response time improvement (2.3s → 120ms)  
-✅ **Deployment**: Fully functional serverless architecture with zero-downtime capabilities  
-✅ **Features**: Comprehensive CRUD operations, advanced filtering, real-time analytics dashboard  
-✅ **Security**: Input validation, secure environment management, XSS/CSRF protection  
-✅ **Scalability**: Cloud-native design supporting auto-scaling and global distribution  
+**Performance**: Resolved N+1 query issues, achieving 95% response time improvement (2.3s → 120ms)  
+**Deployment**: Fully functional serverless architecture with zero-downtime capabilities  
+**Features**: Comprehensive CRUD operations, advanced filtering, real-time analytics dashboard  
+**Security**: Input validation, secure environment management, XSS/CSRF protection  
+**Scalability**: Cloud-native design supporting auto-scaling and global distribution  
 
 ## Technology Stack
 - **Backend**: Flask 2.3.3 with Python 3.13.9
@@ -26,38 +24,216 @@ A production-ready MongoDB-based web application for managing student informatio
 - **Security**: Input validation, XSS/CSRF protection, secure session management
 - **Scalability**: Cloud-native serverless functions with auto-scaling
 
+## Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    STUDENTS ||--o{ ENROLLMENTS : enrolls_in
+    COURSES ||--o{ ENROLLMENTS : has_enrollments
+    INSTRUCTORS ||--o{ COURSES : teaches
+    STUDENTS }o--|| INSTRUCTORS : advised_by
+    
+    STUDENTS {
+        string student_id PK
+        object name { first, last }
+        string email
+        string major
+        string year
+        float gpa
+        int credits_completed
+        string status
+        string advisor_id FK
+        date enrollment_date
+        datetime created_at
+        datetime updated_at
+    }
+    
+    COURSES {
+        string course_code PK
+        string title
+        string description
+        int credits
+        string instructor_id FK
+        string instructor_name
+        string department
+        string semester
+        int year
+        int level
+        int capacity
+        array prerequisites
+        datetime created_at
+        datetime updated_at
+    }
+    
+    INSTRUCTORS {
+        string instructor_id PK
+        object name { first, last }
+        string email
+        string department
+        string title
+        string specialization
+        date hire_date
+        string office
+        datetime created_at
+        datetime updated_at
+    }
+    
+    ENROLLMENTS {
+        string student_id FK
+        string course_code FK
+        string status
+        string grade
+        date enrollment_date
+        date completion_date
+        datetime created_at
+        datetime updated_at
+    }
+```
+
+## Database Schema Overview
+
+### Collection Schemas
+
+**Students Collection Structure:**
+```json
+{
+  "_id": ObjectId("..."),
+  "student_id": "CS100123",
+  "name": {
+    "first": "John",
+    "last": "Doe"
+  },
+  "email": "john.doe@university.edu",
+  "major": "Computer Science",
+  "year": "Junior",
+  "gpa": 3.75,
+  "credits_completed": 45,
+  "status": "Active",
+  "advisor_id": "INS001",
+  "enrollment_date": ISODate("2022-09-01"),
+  "created_at": ISODate("2024-01-01T00:00:00Z"),
+  "updated_at": ISODate("2024-01-01T00:00:00Z")
+}
+```
+
+**Courses Collection Structure:**
+```json
+{
+  "_id": ObjectId("..."),
+  "course_code": "CS301",
+  "title": "Data Structures & Algorithms",
+  "description": "Comprehensive study of data structures",
+  "credits": 4,
+  "instructor_id": "INS001",
+  "instructor_name": "Dr. Jane Smith",
+  "department": "Computer Science",
+  "semester": "Fall",
+  "year": 2024,
+  "level": 300,
+  "capacity": 150,
+  "prerequisites": ["CS101", "CS201"],
+  "created_at": ISODate("2024-01-01T00:00:00Z"),
+  "updated_at": ISODate("2024-01-01T00:00:00Z")
+}
+```
+
+### Indexing Strategy
+
+**Primary Indexes:**
+```javascript
+// Unique indexes for primary keys
+db.students.createIndex({ "student_id": 1 }, { unique: true })
+db.students.createIndex({ "email": 1 }, { unique: true })
+db.courses.createIndex({ "course_code": 1 }, { unique: true })
+db.instructors.createIndex({ "instructor_id": 1 }, { unique: true })
+
+// Composite indexes for common queries
+db.enrollments.createIndex({ student_id: 1, course_code: 1 }, { unique: true })
+db.students.createIndex({ "major": 1, "gpa": -1 })
+db.courses.createIndex({ "instructor_id": 1, "semester": 1, "year": 1 })
+```
+
+### Data Relationships
+
+**Cardity and Relationships:**
+- **Students → Enrollments**: One-to-Many (1:N)
+- **Courses → Enrollments**: One-to-Many (1:N) 
+- **Students → Courses**: Many-to-Many (via Enrollments)
+- **Instructors → Courses**: One-to-Many (1:N)
+- **Students → Advisor**: Many-to-One (N:1)
+
+**Referential Integrity:**
+- Student deletion: Cascade delete enrollments
+- Course deletion: Cascade delete enrollments  
+- Instructor deletion: Remove from courses (set to null)
+
 ## Quick Start
 
 ### Prerequisites
 - Python 3.8+
-- MongoDB (local or Atlas)
+- MongoDB (local or Atlas cloud database)
 - Modern web browser
+- Git for version control
 
 ### Installation
 
-1. **Install dependencies:**
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/your-username/mongodb_mini_project.git
+   cd mongodb_mini_project
+   ```
+
+2. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
 
-2. **Set up MongoDB connection:**
+3. **Set up environment variables:**
    ```bash
+   # Create environment file
    cp .env.example .env
-   # Edit .env with your MongoDB connection string
+   
+   # Edit .env with your configuration:
+   # For local MongoDB:
+   MONGODB_URI=mongodb://localhost:27017/student_course_db
+   
+   # For MongoDB Atlas:
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/student_course_db
+   
+   # Generate secure secret key
+   SECRET_KEY=your-secure-secret-key-here
+   PYTHON_VERSION=3.13
    ```
 
-3. **Start the web application:**
+4. **Initialize the database with sample data:**
    ```bash
-   python run_web.py
+   python seed.py
    ```
 
-4. **Open browser:**
+5. **Start the web application:**
+   ```bash
+   python main.py
+   ```
+
+6. **Open browser:**
    Navigate to http://localhost:5000
 
-### Alternative: TUI Version
+### Alternative: Command Line Interface
 For command-line interface users:
 ```bash
-python main.py
+python main.py  # Interactive CLI menu
+```
+
+### Database Seeding and Testing
+```bash
+# Populate database with sample data
+python seed.py
+
+# Run basic tests (if implemented)
+python test.py
+
+# Create database indexes for performance
+python -c "from db import Database; db = Database(); db.create_indexes()"
 ```
 
 ## Web Interface
@@ -103,49 +279,143 @@ The modern web interface provides:
 - Course enrollment trend analysis
 - Multi-dimensional filtering capabilities
 
-### Available Operations
+### API Endpoints
 
-The system provides the following functionality through its CLI:
+### Web Interface Routes
+The application implements 24 RESTful endpoints organized by entity:
 
+**Students Management (6 endpoints):**
+- `GET /students` - List students with filtering options
+- `GET /students/add` - Display student creation form
+- `POST /students/add` - Create new student
+- `GET /students/<id>` - View student details
+- `GET /students/<id>/edit` - Display student edit form
+- `POST /students/<id>/edit` - Update student
+- `POST /students/<id>/delete` - Delete student
+
+**Courses Management (6 endpoints):**
+- `GET /courses` - List courses with filtering
+- `GET /courses/add` - Display course creation form
+- `POST /courses/add` - Create new course
+- `GET /courses/<code>` - View course details
+- `GET /courses/<code>/edit` - Display course edit form
+- `POST /courses/<code>/edit` - Update course
+- `POST /courses/<code>/delete` - Delete course
+
+**Instructors Management (5 endpoints):**
+- `GET /instructors` - List instructors with filtering
+- `GET /instructors/add` - Display instructor creation form
+- `POST /instructors/add` - Create new instructor
+- `GET /instructors/<id>` - View instructor details
+- `GET /instructors/<id>/edit` - Display instructor edit form
+- `POST /instructors/<id>/edit` - Update instructor
+- `POST /instructors/<id>/delete` - Delete instructor
+
+**Enrollments Management (3 endpoints):**
+- `GET /enrollments` - List enrollments with filtering
+- `GET /enrollments/add` - Display enrollment creation form
+- `POST /enrollments/add` - Create new enrollment
+- `POST /enrollments/delete` - Delete enrollment
+
+**Analytics (1 endpoint):**
+- `GET /queries` - Advanced analytics dashboard
+
+**Dashboard (1 endpoint):**
+- `GET /` - Main dashboard with statistics
+
+## Available Operations
+
+The system provides comprehensive functionality through both web interface and CLI:
+
+### Web Interface Features
 1. **Student Management**:
-   - Add, update, delete, and view students
-   - List all students
-   - Find students by major or GPA threshold
+   - Complete CRUD operations with validation
+   - Advanced filtering by major, year, GPA ranges
+   - Visual GPA indicators and status badges
+   - Performance analytics integration
 
 2. **Course Management**:
-   - Add, update, delete, and view courses
-   - List all courses
+   - Prerequisite chain validation
+   - Instructor assignment system
+   - Semester/level organization
+   - Capacity tracking
 
 3. **Instructor Management**:
-   - Add, update, delete, and view instructors
-   - List all instructors
+   - Department-based categorization
+   - Course load distribution
+   - Academic title management
 
 4. **Enrollment Management**:
-   - Enroll students in courses
-   - Drop students from courses
-   - View student's enrollments
-   - View course enrollments
+   - Student-course relationship management
+   - Grade tracking and status management
+   - Historical enrollment records
 
-5. **Advanced Queries**:
-   - Find students by major
-   - Find students with GPA above threshold
-   - Find courses by instructor
-   - Get average GPA by major
-   - Get top performing students
+5. **Analytics Dashboard**:
+   - Real-time statistics
+   - Average GPA by major
+   - Top performing students
+   - Course enrollment metrics
 
-6. **Performance Optimization**:
-   - Create database indexes
-   - List database indexes
+### CLI Operations
+1. **Student Management**: Add, update, delete, view, list, filter by major/GPA
+2. **Course Management**: Add, update, delete, view, list courses
+3. **Instructor Management**: Add, update, delete, view, list instructors
+4. **Enrollment Management**: Enroll, drop, view enrollments
+5. **Advanced Queries**: GPA analysis, instructor courses, performance metrics
+6. **Performance Optimization**: Database indexing and maintenance
+
+## Validation Rules and Constraints
+
+### Data Validation
+- **Student IDs**: Unique alphanumeric strings (e.g., "CS100123")
+- **Email Formats**: RFC-5322 compliant validation
+- **GPA Ranges**: Float values between 0.0 and 4.0 inclusive
+- **Course Codes**: Department prefix + number (e.g., "CS301")
+- **Credit Hours**: Integer values between 1 and 6
+- **Academic Years**: Four-digit integers (e.g., 2024)
+
+### Business Rules
+1. **Unique Constraints**: Student ID, Email, Course Code, Instructor ID
+2. **Grade Scale**: Letter grades with +/- system (A+ through F)
+3. **Status Values**: 
+   - Students: Active, On Leave
+   - Enrollments: Active, Completed, Dropped, Withdrawn
+4. **Course Levels**: 100, 200, 300, 400 representing academic progression
+5. **Semesters**: Fall, Spring, Summer
+
+### Input Security
+- Server-side validation on all form submissions
+- XSS protection through template auto-escaping
+- SQL injection prevention via parameterized queries
+- CSRF protection with secure session management
 
 ## Project Structure
 
-- `main.py` - Main application entry point with CLI
-- `models.py` - Database models and connection, including CRUD operations
-- `queries.py` - Complex queries and aggregation operations
-- `indexing.py` - Database indexing for performance optimization
-- `test.py` - Test suite to verify all functionality
-- `requirements.txt` - Python dependencies
-- `.env.example` - Example environment file
+```
+mongodb_mini_project/
+├── main.py                    # Main Flask application with all routes
+├── db.py                      # Database connection and model classes
+├── queries.py                 # Complex queries and aggregation operations
+├── seed.py                    # Data population script with sample data
+├── requirements.txt           # Python dependencies
+├── pyproject.toml            # Modern Python packaging configuration
+├── vercel.json               # Deployment configuration for Vercel
+├── TECHNICAL_REPORT.md       # Comprehensive technical documentation
+└── templates/                # Jinja2 templates organized by function
+    ├── core/
+    │   ├── base.html         # Master template with navigation
+    │   ├── dashboard.html    # Analytics dashboard
+    │   └── queries.html      # Advanced analytics page
+    ├── lists/                # Entity listing templates
+    ├── forms/                # Form templates for CRUD operations
+    └── ...
+```
+
+**Core Components:**
+- **database layer (`db.py`)**: Connection management, model classes, CRUD operations
+- **query layer (`queries.py`)**: Advanced aggregations, filtering, analytics
+- **presentation layer (`templates/`)**: Responsive UI with theme support
+- **data layer (`seed.py`)**: Sample data generation and database initialization
 
 ## Deployment & Production Status
 
