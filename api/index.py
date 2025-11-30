@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
 from main import app
 
 # Vercel serverless function entry point
@@ -6,5 +10,6 @@ def handler(request):
 
 # Required for Vercel
 app.debug = False
+
 if __name__ == "__main__":
     app.run()

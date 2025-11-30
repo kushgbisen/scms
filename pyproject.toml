@@ -1,0 +1,18 @@
+[project]
+name = "scms"
+version = "1.0.0"
+description = "Student Course Management System"
+requires-python = ">=3.11"
+
+[tool.rye]
+dev-dependencies = []
+
+[project.dependencies]
+flask = "==2.3.3"
+pymongo = {extras = ["srv"], version = "==4.6.0"}
+python-dotenv = "==1.0.0"
+gunicorn = "==21.2.0"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
