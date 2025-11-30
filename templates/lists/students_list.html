@@ -1,0 +1,101 @@
+{% extends "core/base.html" %}
+
+{% block header %}
+<h1>Students</h1>
+<p>Manage student records and information</p>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="flex-between mb-1">
+        <h5>Students</h5>
+        <a href="{{ url_for('add_student') }}" class="btn btn-primary">Add Student</a>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="filter-form">
+        <form method="GET" action="{{ url_for('students_list') }}" class="filter-grid">
+            <div>
+                <label>Major</label>
+                <select name="major">
+                    <option value="">All Majors</option>
+                    {% for major in available_majors %}
+                    <option value="{{ major }}" {% if current_filters.major == major %}selected{% endif %}>{{ major }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label>Year</label>
+                <select name="year">
+                    <option value="">All Years</option>
+                    {% for year in available_years %}
+                    <option value="{{ year }}" {% if current_filters.year == year %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label>Min GPA</label>
+                <input type="number" name="min_gpa" step="0.1" min="0.0" max="4.0" placeholder="0.0"
+                       value="{{ current_filters.min_gpa or '' }}">
+            </div>
+            
+            <div>
+                <label>Max GPA</label>
+                <input type="number" name="max_gpa" step="0.1" min="0.0" max="4.0" placeholder="4.0"
+                       value="{{ current_filters.max_gpa or '' }}">
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                <a href="{{ url_for('students_list') }}" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+
+    {% if students %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Major</th>
+                        <th>Year</th>
+                        <th>GPA</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ student.student_id }}</td>
+                        <td>{{ student.name.first }} {{ student.name.last }}</td>
+                        <td>{{ student.email }}</td>
+                        <td>{{ student.major }}</td>
+                        <td>{{ student.year }}</td>
+                        <td>{{ student.gpa }}</td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a href="{{ url_for('view_student', student_id=student.student_id) }}" class="btn btn-sm btn-primary">View</a>
+                                <a href="{{ url_for('edit_student', student_id=student.student_id) }}" class="btn btn-sm btn-secondary">Edit</a>
+                                <form method="POST" action="{{ url_for('delete_student', student_id=student.student_id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem;">
+            <p style="color: #666; margin-bottom: 1rem;">No students found in the database.</p>
+            <a href="{{ url_for('add_student') }}" class="btn btn-primary">Add First Student</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

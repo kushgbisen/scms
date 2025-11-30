@@ -1,0 +1,111 @@
+{% extends "core/base.html" %}
+
+{% block header %}
+<h1>Simple Queries</h1>
+<p>Basic MongoDB query demonstrations for academic purposes</p>
+{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+    <!-- Query by Major -->
+    <div class="card">
+        <h5>Find Students by Major</h5>
+        <form method="GET" action="{{ url_for('queries_page') }}">
+            <input type="hidden" name="major" value="Computer Science">
+            <button type="submit" class="btn btn-primary">Show CS Students</button>
+        </form>
+        
+        {% if students_by_major %}
+            <div style="margin-top: 1rem;">
+                <strong>{{ students_by_major|length }} Computer Science students found:</strong>
+                {% for student in students_by_major[:3] %}
+                <div style="padding: 0.5rem; margin-top: 0.5rem; background: #f8f9fa; border-radius: 4px;">
+                    {{ student.name.first }} {{ student.name.last }} ({{ student.student_id }})
+                    <br><small>GPA: {{ student.gpa }} | Year: {{ student.year }}</small>
+                </div>
+                {% endfor %}
+                {% if students_by_major|length > 3 %}
+                <small style="color: #666;">...and {{ students_by_major|length - 3 }} more</small>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Query by GPA -->
+    <div class="card">
+        <h5>Find Students with High GPA</h5>
+        <form method="GET" action="{{ url_for('queries_page') }}">
+            <input type="hidden" name="gpa_threshold" value="3.5">
+            <button type="submit" class="btn btn-primary">Show GPA ≥ 3.5</button>
+        </form>
+        
+        {% if students_by_gpa %}
+            <div style="margin-top: 1rem;">
+                <strong>{{ students_by_gpa|length }} students with GPA ≥ 3.5:</strong>
+                {% for student in students_by_gpa[:3] %}
+                <div style="padding: 0.5rem; margin-top: 0.5rem; background: #f8f9fa; border-radius: 4px;">
+                    {{ student.name.first }} {{ student.name.last }} ({{ student.student_id }})
+                    <br><small>GPA: {{ student.gpa }} | Major: {{ student.major }}</small>
+                </div>
+                {% endfor %}
+                {% if students_by_gpa|length > 3 %}
+                <small style="color: #666;">...and {{ students_by_gpa|length - 3 }} more</small>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Query by Instructor -->
+    <div class="card">
+        <h5>Find Courses by Instructor</h5>
+        <form method="GET" action="{{ url_for('queries_page') }}">
+            <input type="text" name="instructor_id" placeholder="Enter Instructor ID" required
+                   style="margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+            <button type="submit" class="btn btn-primary">Search Courses</button>
+        </form>
+        
+        {% if courses_by_instructor %}
+            <div style="margin-top: 1rem;">
+                <strong>{{ courses_by_instructor|length }} courses found:</strong>
+                {% for course in courses_by_instructor[:3] %}
+                <div style="padding: 0.5rem; margin-top: 0.5rem; background: #f8f9fa; border-radius: 4px;">
+                    {{ course.course_code }}: {{ course.title }}
+                    <br><small>{{ course.credits }} credits | {{ course.semester }} {{ course.year }}</small>
+                </div>
+                {% endfor %}
+                {% if courses_by_instructor|length > 3 %}
+                <small style="color: #666;">...and {{ courses_by_instructor|length - 3 }} more</small>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Average GPA by Major -->
+    <div class="card">
+        <h5>Average GPA by Major</h5>
+        <form method="GET" action="{{ url_for('queries_page') }}">
+            <button type="submit" class="btn btn-primary">Show All Majors</button>
+        </form>
+        
+        {% if avg_gpa_by_major %}
+            <div style="margin-top: 1rem;">
+                {% for item in avg_gpa_by_major[:5] %}
+                <div style="padding: 0.5rem; margin-bottom: 0.5rem; background: #f8f9fa; border-radius: 4px;">
+                    <strong>{{ item._id }}:</strong> {{ "%.1f"|format(item.average_gpa) }} GPA
+                    <br><small>{{ item.count }} students</small>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h5>MongoDB Query Examples</h5>
+    <div style="background: #f8f9fa; padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.9rem;">
+        <strong>Find by major:</strong> db.students.find({"major": "Computer Science"})<br>
+        <strong>Find by GPA:</strong> db.students.find({"gpa": {"$gte": 3.5}})<br>
+        <strong>Average by major:</strong> db.students.aggregate([{"$group": {"_id": "$major", "avg_gpa": {"$avg": "$gpa"}}}])
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "core/base.html" %}
+
+{% block header %}
+<h1>Dashboard</h1>
+<p>Overview of student course management system</p>
+{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-number">{{ total_students }}</div>
+        <div class="stat-label">Total Students</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_courses }}</div>
+        <div class="stat-label">Total Courses</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_instructors }}</div>
+        <div class="stat-label">Total Instructors</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_enrollments }}</div>
+        <div class="stat-label">Total Enrollments</div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card">
+    <h5>Quick Actions</h5>
+    <div class="quick-actions">
+        <a href="{{ url_for('add_student') }}" class="btn btn-primary">Add Student</a>
+        <a href="{{ url_for('add_course') }}" class="btn btn-primary">Add Course</a>
+        <a href="{{ url_for('add_instructor') }}" class="btn btn-primary">Add Instructor</a>
+        <a href="{{ url_for('add_enrollment') }}" class="btn btn-primary">Add Enrollment</a>
+    </div>
+</div>
+
+<!-- Recent Data Overview -->
+<div class="dashboard-grid">
+    <!-- Average GPA by Major -->
+    <div class="card">
+        <h5>Average GPA by Major</h5>
+        {% if avg_gpa_by_major %}
+            {% for item in avg_gpa_by_major[:5] %}
+            <div class="student-item">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong>{{ item._id }}</strong>
+                    <span class="{% if item.average_gpa >= 3.5 %}gpa-high{% elif item.average_gpa >= 2.5 %}gpa-medium{% else %}gpa-low{% endif %}">
+                        {{ "%.1f"|format(item.average_gpa) }}
+                    </span>
+                </div>
+                <small class="student-info">{{ item.count }} students</small>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="muted-text centered-text">No GPA data available</p>
+        {% endif %}
+    </div>
+
+    <!-- Top Students -->
+    <div class="card">
+        <h5>Top Performing Students</h5>
+        {% if top_students %}
+            {% for student in top_students[:5] %}
+            <div class="student-item">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>{{ student.name.first }} {{ student.name.last }}</strong><br>
+                        <small class="student-info">{{ student.major }} • {{ student.student_id }}</small>
+                    </div>
+                    <span class="gpa-badge">{{ student.gpa }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="muted-text centered-text">No student data available</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

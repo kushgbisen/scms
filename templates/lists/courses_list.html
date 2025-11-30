@@ -1,0 +1,105 @@
+{% extends "core/base.html" %}
+
+{% block header %}
+<h1>Courses</h1>
+<p>Manage course catalog and information</p>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h5>Courses</h5>
+        <a href="{{ url_for('add_course') }}" class="btn btn-primary">Add Course</a>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="filter-form">
+        <form method="GET" action="{{ url_for('courses_list') }}" class="filter-grid">
+            <div>
+                <label>Instructor</label>
+                <select name="instructor_id">
+                    <option value="">All Instructors</option>
+                    {% for instructor in available_instructors %}
+                    <option value="{{ instructor.instructor_id }}" {% if current_filters.instructor_id == instructor.instructor_id %}selected{% endif %}>
+                        {{ instructor.name.first }} {{ instructor.name.last }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label>Credits</label>
+                <select name="credits">
+                    <option value="">All Credits</option>
+                    {% for credit in available_credits %}
+                    <option value="{{ credit }}" {% if current_filters.credits == credit|string %}selected{% endif %}>{{ credit }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label>Semester</label>
+                <select name="semester">
+                    <option value="">All Semesters</option>
+                    {% for semester in available_semesters %}
+                    <option value="{{ semester }}" {% if current_filters.semester == semester %}selected{% endif %}>{{ semester }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label>Year</label>
+                <input type="number" name="year" min="2000" max="2030" placeholder="2024"
+                       value="{{ current_filters.year or '' }}">
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                <a href="{{ url_for('courses_list') }}" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+
+    {% if courses %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Title</th>
+                        <th>Credits</th>
+                        <th>Instructor</th>
+                        <th>Semester</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in courses %}
+                    <tr>
+                        <td>{{ course.course_code }}</td>
+                        <td>{{ course.title }}</td>
+                        <td>{{ course.credits }}</td>
+                        <td>{{ course.instructor_id }}</td>
+                        <td>{{ course.semester }} {{ course.year }}</td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a href="{{ url_for('view_course', course_code=course.course_code) }}" class="btn btn-sm btn-primary">View</a>
+                                <a href="{{ url_for('edit_course', course_code=course.course_code) }}" class="btn btn-sm btn-secondary">Edit</a>
+                                <form method="POST" action="{{ url_for('delete_course', course_code=course.course_code) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem;">
+            <p style="color: #666; margin-bottom: 1rem;">No courses found in the database.</p>
+            <a href="{{ url_for('add_course') }}" class="btn btn-primary">Add First Course</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

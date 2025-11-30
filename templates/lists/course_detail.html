@@ -1,0 +1,70 @@
+{% extends "core/base.html" %}
+
+{% block header %}
+<h1>Course Details</h1>
+<p>View course information and enrolled students</p>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h5>{{ course.course_code }}: {{ course.title }}</h5>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+            <strong>Credits:</strong> {{ course.credits }}<br>
+            <strong>Instructor ID:</strong> {{ course.instructor_id }}<br>
+            <strong>Semester:</strong> {{ course.semester }} {{ course.year }}
+        </div>
+        <div>
+            <strong>Prerequisites:</strong> 
+            {% if course.prerequisites %}
+                {{ course.prerequisites|join(', ') }}
+            {% else %}
+                None
+            {% endif %}
+            <br>
+            <strong>Description:</strong><br>
+            {{ course.description or 'No description available' }}
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem;">
+        <a href="{{ url_for('edit_course', course_code=course.course_code) }}" class="btn btn-secondary">Edit Course</a>
+        <a href="{{ url_for('courses_list') }}" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>
+
+<div class="card">
+    <h5>Enrolled Students</h5>
+    {% if enrollments %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Status</th>
+                        <th>Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in enrollments %}
+                        {% set student = student_model.find_by_id(enrollment.student_id) %}
+                    <tr>
+                        <td>{{ enrollment.student_id }}</td>
+                        <td>
+                            {% if student %}{{ student.name.first }} {{ student.name.last }}{% else %}Student not found{% endif %}
+                        </td>
+                        <td>{{ enrollment.status }}</td>
+                        <td>{{ enrollment.get('grade', 'N/A') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p style="color: #666;">No students are enrolled in this course.</p>
+        <a href="{{ url_for('add_enrollment') }}" class="btn btn-primary">Add Student</a>
+    {% endif %}
+</div>
+{% endblock %}

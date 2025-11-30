@@ -1,0 +1,61 @@
+{% extends "core/base.html" %}
+
+{% block header %}
+<h1>Student Details</h1>
+<p>View student information and enrollments</p>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h5>{{ student.name.first }} {{ student.name.last }}</h5>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+            <strong>Student ID:</strong> {{ student.student_id }}<br>
+            <strong>Email:</strong> {{ student.email }}<br>
+            <strong>Major:</strong> {{ student.major }}
+        </div>
+        <div>
+            <strong>Year:</strong> {{ student.year }}<br>
+            <strong>GPA:</strong> {{ student.gpa }}<br>
+            <strong>Enrollment Date:</strong> {{ student.get('enrollment_date', 'N/A') }}
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem;">
+        <a href="{{ url_for('edit_student', student_id=student.student_id) }}" class="btn btn-secondary">Edit Student</a>
+        <a href="{{ url_for('students_list') }}" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>
+
+<div class="card">
+    <h5>Course Enrollments</h5>
+    {% if enrollments %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Course Title</th>
+                        <th>Status</th>
+                        <th>Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in enrollments %}
+                        {% set course = course_model.find_by_code(enrollment.course_code) %}
+                    <tr>
+                        <td>{{ enrollment.course_code }}</td>
+                        <td>{% if course %}{{ course.title }}{% else %}Course not found{% endif %}</td>
+                        <td>{{ enrollment.status }}</td>
+                        <td>{{ enrollment.get('grade', 'N/A') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p style="color: #666;">This student is not enrolled in any courses.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "core/base.html" %}
+
+{% block header %}
+<h1>Instructor Details</h1>
+<p>View instructor information and courses</p>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h5>{{ instructor.name.first }} {{ instructor.name.last }}</h5>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+            <strong>Instructor ID:</strong> {{ instructor.instructor_id }}<br>
+            <strong>Email:</strong> {{ instructor.email }}<br>
+            <strong>Department:</strong> {{ instructor.department }}
+        </div>
+        <div>
+            <strong>Hire Date:</strong> {{ instructor.get('hire_date', 'N/A') }}
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem;">
+        <a href="{{ url_for('edit_instructor', instructor_id=instructor.instructor_id) }}" class="btn btn-secondary">Edit Instructor</a>
+        <a href="{{ url_for('instructors_list') }}" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>
+
+<div class="card">
+    <h5>Courses Taught</h5>
+    {% if courses %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Course Title</th>
+                        <th>Credits</th>
+                        <th>Semester</th>
+                        <th>Enrollments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in courses %}
+                        {% set enrollment_count = enrollment_model.find_by_course(course.course_code)|length %}
+                    <tr>
+                        <td>{{ course.course_code }}</td>
+                        <td>{{ course.title }}</td>
+                        <td>{{ course.credits }}</td>
+                        <td>{{ course.semester }} {{ course.year }}</td>
+                        <td>{{ enrollment_count }} students</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p style="color: #666;">This instructor is not assigned to any courses.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "core/base.html" %}
+
+{% block header %}
+<h1>Enrollments</h1>
+<p>View student-course enrollment data</p>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h5>Enrollments</h5>
+        <a href="{{ url_for('add_enrollment') }}" class="btn btn-primary">Add Enrollment</a>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="filter-form">
+        <form method="GET" action="{{ url_for('enrollments_list') }}" class="filter-grid">
+            <div>
+                <label>Student</label>
+                <select name="student_id">
+                    <option value="">All Students</option>
+                    {% for student in available_students %}
+                    <option value="{{ student.student_id }}" {% if current_filters.student_id == student.student_id %}selected{% endif %}>
+                        {{ student.name.first }} {{ student.name.last }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label>Course</label>
+                <select name="course_code">
+                    <option value="">All Courses</option>
+                    {% for course in available_courses %}
+                    <option value="{{ course.course_code }}" {% if current_filters.course_code == course.course_code %}selected{% endif %}>
+                        {{ course.course_code }}: {{ course.title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label>Status</label>
+                <select name="status">
+                    <option value="">All Statuses</option>
+                    {% for status in available_statuses %}
+                    <option value="{{ status }}" {% if current_filters.status == status %}selected{% endif %}>{{ status }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                <a href="{{ url_for('enrollments_list') }}" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+
+    {% if enrollments %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Student ID</th>
+                        <th>Course</th>
+                        <th>Course Code</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in enrollments %}
+                        {% set student = student_model.find_by_id(enrollment.student_id) %}
+                        {% set course = course_model.find_by_code(enrollment.course_code) %}
+                    <tr>
+                        <td>{% if student %}{{ student.name.first }} {{ student.name.last }}{% else %}N/A{% endif %}</td>
+                        <td>{{ enrollment.student_id }}</td>
+                        <td>{% if course %}{{ course.title }}{% else %}N/A{% endif %}</td>
+                        <td>{{ enrollment.course_code }}</td>
+                        <td>{{ enrollment.status }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('delete_enrollment') }}" style="display: inline;">
+                                <input type="hidden" name="student_id" value="{{ enrollment.student_id }}">
+                                <input type="hidden" name="course_code" value="{{ enrollment.course_code }}">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem;">
+            <p style="color: #666; margin-bottom: 1rem;">No enrollments found in the database.</p>
+            <a href="{{ url_for('add_enrollment') }}" class="btn btn-primary">Add First Enrollment</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

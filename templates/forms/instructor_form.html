@@ -1,0 +1,52 @@
+{% extends "core/base.html" %}
+
+{% block header %}
+<h1>{% if instructor %}Edit Instructor{% else %}Add Instructor{% endif %}</h1>
+<p>{% if instructor %}Update instructor information{% else %}Create a new instructor record{% endif %}</p>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form method="POST">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="instructor_id">Instructor ID *</label>
+                <input type="text" id="instructor_id" name="instructor_id" required 
+                       value="{% if instructor %}{{ instructor.instructor_id }}{% endif %}"
+                       {% if instructor %}readonly{% endif %}>
+            </div>
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" required 
+                       value="{% if instructor %}{{ instructor.email }}{% endif %}">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="first_name">First Name *</label>
+                <input type="text" id="first_name" name="first_name" required 
+                       value="{% if instructor %}{{ instructor.name.first }}{% endif %}">
+            </div>
+            <div class="form-group">
+                <label for="last_name">Last Name *</label>
+                <input type="text" id="last_name" name="last_name" required 
+                       value="{% if instructor %}{{ instructor.name.last }}{% endif %}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="department">Department *</label>
+            <input type="text" id="department" name="department" required 
+                   value="{% if instructor %}{{ instructor.department }}{% endif %}">
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+            <button type="submit" class="btn btn-primary">
+                {% if instructor %}Update Instructor{% else %}Add Instructor{% endif %}
+            </button>
+            <a href="{{ url_for('instructors_list') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
