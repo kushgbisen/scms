@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from db import Database, Student, Course, Instructor, Enrollment
 from queries import QueryOperations
+import os
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here'
+app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 
 # Initialize database and models
 db = Database()
