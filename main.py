@@ -446,12 +446,9 @@ def enrollments_list():
                 status=status
             )
         else:
-            # Get all enrollments with student and course details
-            all_students = student_model.find_all()
-            enrollments = []
-            for student in all_students:
-                student_enrollments = enrollment_model.find_by_student(student['student_id'])
-                enrollments.extend(student_enrollments)
+            # Get all enrollments in a single query - MUCH FASTER!
+            enrollments = enrollment_model.collection.find({}).sort([("created_at", -1)])
+            enrollments = list(enrollments)
         
         return render_template('lists/enrollments_list.html', 
                              enrollments=enrollments,
