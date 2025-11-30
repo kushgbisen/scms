@@ -449,6 +449,15 @@ def enrollments_list():
             # Get all enrollments in a single query - MUCH FASTER!
             enrollments = enrollment_model.collection.find({}).sort([("created_at", -1)])
             enrollments = list(enrollments)
+            
+            # Pre-load student and course data to avoid N+1 queries in template
+            students_dict = {}
+            for student in available_students:
+                students_dict[student['student_id']] = student
+                
+            courses_dict = {}  
+            for course in available_courses:
+                courses_dict[course['course_code']] = course
         
         return render_template('lists/enrollments_list.html', 
                              enrollments=enrollments,
@@ -460,6 +469,8 @@ def enrollments_list():
                                  'course_code': course_code,
                                  'status': status
                              },
+                             students_dict=students_dict,
+                             courses_dict=courses_dict,
                              student_model=student_model, 
                              course_model=course_model, 
                              instructor_model=instructor_model)

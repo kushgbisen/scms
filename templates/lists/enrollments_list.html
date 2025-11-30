@@ -71,8 +71,8 @@
                 </thead>
                 <tbody>
                     {% for enrollment in enrollments %}
-                        {% set student = student_model.find_by_id(enrollment.student_id) %}
-                        {% set course = course_model.find_by_code(enrollment.course_code) %}
+                        {% set student = students_dict.get(enrollment.student_id) %}
+                        {% set course = courses_dict.get(enrollment.course_code) %}
                     <tr>
                         <td>{% if student %}{{ student.name.first }} {{ student.name.last }}{% else %}N/A{% endif %}</td>
                         <td>{{ enrollment.student_id }}</td>
