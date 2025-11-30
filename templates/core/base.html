@@ -537,7 +537,7 @@
                     <li><a href="{{ url_for('courses_list') }}" {% if request.endpoint == 'courses_list' or 'course' in request.endpoint %}class="active"{% endif %}>Courses</a></li>
                     <li><a href="{{ url_for('instructors_list') }}" {% if request.endpoint == 'instructors_list' or request.endpoint and 'instructor' in request.endpoint %}class="active"{% endif %}>Instructors</a></li>
                     <li><a href="{{ url_for('enrollments_list') }}" {% if 'enrollment' in request.endpoint %}class="active"{% endif %}>Enrollments</a></li>
-                    <li><a href="{{ url_for('queries_page') }}" {% if request.endpoint == 'queries_page' %}class="active"{% endif %}>Simple Queries</a></li>
+                    
                 </ul>
                 <div class="nav-controls">
                     <div class="theme-toggle" onclick="toggleTheme()"></div>

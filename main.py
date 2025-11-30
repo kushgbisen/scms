@@ -523,51 +523,7 @@ def delete_enrollment():
         flash(f'Error deleting enrollment: {str(e)}', 'error')
     return redirect(url_for('enrollments_list'))
 
-# Queries
-@app.route('/queries')
-def queries_page():
-    """Queries page"""
-    try:
-        # Get filter parameters
-        major = request.args.get('major')
-        gpa_threshold = request.args.get('gpa_threshold')
-        instructor_id = request.args.get('instructor_id')
-        
-        # Run queries with filters
-        students_by_major = []
-        students_by_gpa = []
-        courses_by_instructor = []
-        avg_gpa_by_major = []
-        
-        if major:
-            students_by_major = query_ops.find_students_by_major(major)
-        
-        if gpa_threshold:
-            try:
-                gpa_threshold_float = float(gpa_threshold)
-                students_by_gpa = query_ops.find_students_with_gpa_above(gpa_threshold_float)
-            except ValueError:
-                pass
-        
-        if instructor_id:
-            courses_by_instructor = query_ops.find_courses_by_instructor(instructor_id)
-        
-        # Get avg GPA by major
-        avg_gpa_by_major = query_ops.get_average_gpa_by_major()
-        
-        return render_template('core/queries.html',
-                             students_by_major=students_by_major,
-                             students_by_gpa=students_by_gpa,
-                             courses_by_instructor=courses_by_instructor,
-                             avg_gpa_by_major=avg_gpa_by_major,
-                             current_filters={
-                                 'major': major,
-                                 'gpa_threshold': gpa_threshold,
-                                 'instructor_id': instructor_id
-                             })
-    except Exception as e:
-        flash(f'Error loading queries: {str(e)}', 'error')
-        return render_template('core/queries.html')
+
 
 
 
