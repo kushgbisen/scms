@@ -35,7 +35,8 @@ erDiagram
     
     STUDENTS {
         string student_id PK
-        object name { first, last }
+        string first_name
+        string last_name
         string email
         string major
         string year
@@ -60,14 +61,15 @@ erDiagram
         int year
         int level
         int capacity
-        array prerequisites
+        string prerequisites
         datetime created_at
         datetime updated_at
     }
     
     INSTRUCTORS {
         string instructor_id PK
-        object name { first, last }
+        string first_name
+        string last_name
         string email
         string department
         string title

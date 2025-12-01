@@ -437,6 +437,15 @@ def enrollments_list():
         available_courses = course_model.find_all()
         available_statuses = ['Active', 'Completed', 'Dropped', 'Withdrawn']
         
+        # Pre-load data for template
+        students_dict = {}
+        for student in available_students:
+            students_dict[student['student_id']] = student
+            
+        courses_dict = {}  
+        for course in available_courses:
+            courses_dict[course['course_code']] = course
+        
         enrollments = []
         if student_id or course_code or status:
             # Apply filters
@@ -449,15 +458,6 @@ def enrollments_list():
             # Get enrollments fast
             enrollments = enrollment_model.collection.find({}).sort([("created_at", -1)])
             enrollments = list(enrollments)
-            
-            # Pre-load data for template
-            students_dict = {}
-            for student in available_students:
-                students_dict[student['student_id']] = student
-                
-            courses_dict = {}  
-            for course in available_courses:
-                courses_dict[course['course_code']] = course
         
         return render_template('lists/enrollments_list.html', 
                              enrollments=enrollments,
@@ -487,6 +487,8 @@ def enrollments_list():
                                  'course_code': '',
                                  'status': ''
                              },
+                             students_dict={},
+                             courses_dict={},
                              student_model=student_model, 
                              course_model=course_model, 
                              instructor_model=instructor_model)
