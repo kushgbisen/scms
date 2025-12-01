@@ -9,7 +9,7 @@
 **Project Type:** MongoDB Mini Project  
 **Submission Date:** December 2024  
 
-[![UPES Logo](https://upload.wikimedia.org/wikipedia/en/thumb/4/47/University_of_Petroleum_and_Energy_Studies_logo.png/220px-University_of_Petroleum_and_Energy_Studies_logo.png)](https://www.upes.ac.in)
+[![UPES Logo](https://myupes-beta.upes.ac.in/oneportal/assets/site-images/upes/logo.png)](https://www.upes.ac.in)
 
 ## Executive Summary
 
@@ -362,8 +362,8 @@ db.courses.createIndex({ "instructor_id": 1, "semester": 1, "year": 1 })
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/mongodb_mini_project.git
-   cd mongodb_mini_project
+   git clone https://github.com/kushgbisen/scms.git
+   cd scms
    ```
 
 2. **Install dependencies:**
